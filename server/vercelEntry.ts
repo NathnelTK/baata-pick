@@ -1,6 +1,7 @@
+import "dotenv/config";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createApp } from "../server/app";
-import { ensureAdminSeed } from "../server/_core/auth";
+import { createApp } from "./app";
+import { ensureAdminSeed } from "./_core/auth";
 
 const app = createApp();
 let seedPromise: Promise<void> | null = null;
