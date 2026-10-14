@@ -1,19 +1,22 @@
 import { ArrowLeft, LockKeyhole, ShieldCheck } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { useI18n } from "@/i18n";
 
 export default function Privacy() {
+  const { t } = useI18n();
+  const p = t.privacy;
   return <div className="site-shell"><SiteHeader /><main className="privacy-page page-frame">
-    <a className="back-link" href="/"><ArrowLeft size={16} /> Back to BAATA</a>
-    <div className="privacy-header"><span className="privacy-icon"><LockKeyhole size={24} /></span><span className="form-overline">YOUR INFORMATION, EXPLAINED</span><h1>Privacy, in plain language.</h1><p>We’re preparing to launch. These forms help us understand local demand and plan responsibly.</p></div>
+    <a className="back-link" href="/"><ArrowLeft size={16} /> {t.common.backToBaata}</a>
+    <div className="privacy-header"><span className="privacy-icon"><LockKeyhole size={24} /></span><span className="form-overline">{p.overline}</span><h1>{p.title}</h1><p>{p.intro}</p></div>
     <div className="privacy-content">
-      <section><h2>What we collect</h2><p>Depending on the form, BAATA collects your name, phone number, location, and the delivery interests you describe. Customers may add an email address. Driver applicants provide vehicle, experience, availability, and relevant license details. Businesses share their category, location, products or services, and delivery needs.</p></section>
-      <section><h2>Why we use it</h2><p>We use registration information to understand demand by area, review driver applications and business interest, plan the service, and contact people about relevant launch updates. Joining the waitlist does not create an account or place an order.</p></section>
-      <section><h2>Who can see it</h2><p>Registration records are available only to authorized BAATA administrators for these purposes. They are not shown publicly. We do not sell your personal information. We may use aggregated area counts to understand where interest is growing.</p></section>
-      <section><h2>Driver applications</h2><p>Driver application statuses—Pending, Under Review, Approved, or Rejected—describe review progress only. They do not confirm legal clearance to operate. Please do not upload identity documents or send copies of your license through this website.</p></section>
-      <section><h2>How we protect it</h2><p>Registration data is submitted over the site, validated by the server, and stored in the site's protected database. Basic anti-spam controls are applied. No website can promise zero risk, so please share only the information requested on the form.</p></section>
-      <section><h2>Your choices and questions</h2><p>Submitting a form is optional. No public support email or phone number has been provided yet; BAATA will publish its contact and data-request channel before a public service launch. You may wait to submit until those details are available.</p></section>
-      <aside className="privacy-callout"><ShieldCheck size={20} /><p><strong>Only share what’s needed.</strong> The registration forms are for pre-launch interest. They do not request passwords, payment information, or document uploads.</p></aside>
+      <section><h2>{p.collectTitle}</h2><p>{p.collectText}</p></section>
+      <section><h2>{p.useTitle}</h2><p>{p.useText}</p></section>
+      <section><h2>{p.whoTitle}</h2><p>{p.whoText}</p></section>
+      <section><h2>{p.driverTitle}</h2><p>{p.driverText}</p></section>
+      <section><h2>{p.protectTitle}</h2><p>{p.protectText}</p></section>
+      <section><h2>{p.choicesTitle}</h2><p>{p.choicesText}</p></section>
+      <aside className="privacy-callout"><ShieldCheck size={20} /><p><strong>{p.calloutStrong}</strong> {p.calloutText}</p></aside>
     </div>
-    <p className="privacy-updated">This notice is for the BAATA pre-launch registration website. It should be reviewed and updated with the operator’s legal identity, contact details, and retention policy before public launch.</p>
+    <p className="privacy-updated">{p.updated}</p>
   </main><SiteFooter /></div>;
 }

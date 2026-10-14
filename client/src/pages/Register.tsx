@@ -1,45 +1,47 @@
 import { ArrowLeft, ArrowRight, ArrowUpRight, Bike, Store, UsersRound } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
-
-const options = [
-  {
-    href: "/register/customer",
-    icon: <UsersRound size={24} />,
-    index: "FOR HOMES & INDIVIDUALS",
-    title: "Customer",
-    description: "Join the waitlist and tell us what you’d like delivered in your area.",
-    cta: "Join the customer waitlist",
-    className: "chooser-card--customer",
-  },
-  {
-    href: "/register/driver",
-    icon: <Bike size={24} />,
-    index: "FOR LOCAL DRIVERS",
-    title: "Driver",
-    description: "Apply to drive with BAATA using the vehicle you have and the routes you know.",
-    cta: "Apply to drive",
-    className: "chooser-card--driver",
-  },
-  {
-    href: "/register/business",
-    icon: <Store size={24} />,
-    index: "FOR SHOPS & BUSINESSES",
-    title: "Business owner",
-    description: "Register your business interest and tell us what delivery could unlock for you.",
-    cta: "Register business interest",
-    className: "chooser-card--business",
-  },
-];
+import { useI18n } from "@/i18n";
 
 export default function RegisterChooser() {
+  const { t } = useI18n();
+  const c = t.chooser;
+  const options = [
+    {
+      href: "/register/customer",
+      icon: <UsersRound size={24} />,
+      index: c.customerIndex,
+      title: c.customerTitle,
+      description: c.customerDescription,
+      cta: c.customerCta,
+      className: "chooser-card--customer",
+    },
+    {
+      href: "/register/driver",
+      icon: <Bike size={24} />,
+      index: c.driverIndex,
+      title: c.driverTitle,
+      description: c.driverDescription,
+      cta: c.driverCta,
+      className: "chooser-card--driver",
+    },
+    {
+      href: "/register/business",
+      icon: <Store size={24} />,
+      index: c.businessIndex,
+      title: c.businessTitle,
+      description: c.businessDescription,
+      cta: c.businessCta,
+      className: "chooser-card--business",
+    },
+  ];
   return <div className="site-shell">
     <SiteHeader />
     <main className="chooser-page page-frame">
-      <a className="back-link" href="/"><ArrowLeft size={16} /> Back to BAATA</a>
+      <a className="back-link" href="/"><ArrowLeft size={16} /> {t.common.backToBaata}</a>
       <div className="chooser-head">
-        <span className="form-overline">JOIN THE WAITLIST</span>
-        <h1>How do you want to register?</h1>
-        <p>Choose the path that fits you. Each form takes a few minutes, and your details help us plan the first routes.</p>
+        <span className="form-overline">{c.overline}</span>
+        <h1>{c.heading}</h1>
+        <p>{c.intro}</p>
       </div>
       <div className="chooser-cards">
         {options.map(option => (
@@ -52,7 +54,7 @@ export default function RegisterChooser() {
           </a>
         ))}
       </div>
-      <div className="registration-bottom-note"><span className="bottom-note-line" />BAATA is preparing to launch. Registration is for interest only—orders aren’t open yet.<span className="bottom-note-line" /></div>
+      <div className="registration-bottom-note"><span className="bottom-note-line" />{c.bottomNote}<span className="bottom-note-line" /></div>
     </main>
     <SiteFooter />
   </div>;

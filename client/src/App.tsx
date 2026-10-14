@@ -8,6 +8,7 @@ import RegisterChooser from "@/pages/Register";
 import Registration from "@/pages/Registration";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { LanguageProvider } from "./i18n";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
 function Router() {
@@ -23,5 +24,5 @@ function Router() {
 }
 
 export default function App() {
-  return <ErrorBoundary><ThemeProvider defaultTheme="light"><TooltipProvider><Toaster /><Router /></TooltipProvider></ThemeProvider></ErrorBoundary>;
+  return <ErrorBoundary><ThemeProvider defaultTheme="light"><LanguageProvider><TooltipProvider><Toaster /><Router /></TooltipProvider></LanguageProvider></ThemeProvider></ErrorBoundary>;
 }
