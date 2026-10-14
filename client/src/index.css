@@ -223,6 +223,54 @@ img { max-width: 100%; display: block; }
 .audience-card:hover .audience-cta svg { transform: translateX(4px); }
 .audience-route { position: absolute; right: 13px; bottom: 12px; color: rgb(201 90 62 / 22%); font-size: 30px; letter-spacing: 3px; }
 .audience-card--driver .audience-route { color: rgb(242 207 138 / 34%); }
+
+/* Registration chooser */
+.chooser-page { padding-top: 40px; padding-bottom: 90px; }
+.chooser-head { max-width: 640px; margin-top: 30px; }
+.chooser-head h1 { margin: 15px 0 13px; }
+.chooser-head p { color: var(--body); font-size: 13px; line-height: 1.7; }
+.chooser-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 36px; }
+.chooser-card { display: flex; min-height: 300px; flex-direction: column; padding: 24px; border: 1px solid transparent; transition: transform .2s ease, box-shadow .2s ease; }
+.chooser-card:hover { transform: translateY(-4px); box-shadow: 0 18px 38px rgb(24 52 45 / 10%); }
+.chooser-card--customer { color: var(--ink); background: #e7eadf; }
+.chooser-card--driver { color: #fffaf2; background: #294b40; }
+.chooser-card--business { color: var(--ink); background: #ead9c2; }
+.chooser-card-top { display: flex; align-items: center; justify-content: space-between; }
+.chooser-icon { width: 47px; height: 47px; display: grid; place-items: center; border: 1px solid rgb(24 52 45 / 14%); border-radius: 50%; color: var(--clay); background: rgb(255 253 248 / 40%); }
+.chooser-card--driver .chooser-icon { border-color: rgb(255 255 255 / 26%); color: #ebba69; background: rgb(255 255 255 / 5%); }
+.chooser-arrow { opacity: .55; }
+.chooser-index { margin-top: 24px; color: #65746b; font-size: 9px; font-weight: 700; letter-spacing: 1px; }
+.chooser-card--driver .chooser-index { color: #c2d0c8; }
+.chooser-card h2 { margin: 9px 0 9px; font: 600 30px/1.05 "Fraunces", Georgia, serif; letter-spacing: -.6px; }
+.chooser-card p { margin: 0; color: #5c6c63; font-size: 12px; line-height: 1.65; }
+.chooser-card--driver p { color: #d0dbd3; }
+.chooser-cta { display: inline-flex; align-items: center; gap: 9px; margin-top: auto; padding-top: 22px; font-size: 11px; font-weight: 700; }
+.chooser-cta svg { color: var(--clay); transition: transform .18s ease; }
+.chooser-card--driver .chooser-cta svg { color: #e4b763; }
+.chooser-card:hover .chooser-cta svg { transform: translateX(4px); }
+
+/* About section */
+.about-section { padding-top: 76px; padding-bottom: 26px; border-top: 1px solid #e2ded4; }
+.about-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+.about-card { padding: 24px; border: 1px solid #e2ddd0; border-radius: 3px; background: #fbf8f0; }
+.about-card h3 { margin: 0 0 10px; font: 600 19px/1.2 "Fraunces", Georgia, serif; }
+.about-card p { margin: 0; color: #5c6c63; font-size: 12px; line-height: 1.7; }
+
+/* Contact section */
+.contact-section { padding-top: 76px; padding-bottom: 90px; border-top: 1px solid #e2ded4; }
+.contact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
+.contact-card { display: flex; align-items: center; gap: 14px; padding: 17px 19px; border: 1px solid #e2ddd0; border-radius: 3px; background: #fbf8f0; color: var(--ink); transition: transform .18s ease, box-shadow .18s ease; }
+.contact-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgb(24 52 45 / 10%); }
+.contact-icon { width: 42px; height: 42px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid rgb(209 106 72 / 25%); border-radius: 50%; color: var(--clay); background: #fff; }
+.contact-copy { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; }
+.contact-copy strong { font-size: 12px; font-weight: 700; }
+.contact-copy span { overflow: hidden; color: #69776f; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.contact-card > svg:last-child { flex: 0 0 auto; color: var(--clay); }
+
+.footer-social { display: flex; gap: 9px; margin-top: 19px; }
+.footer-social a { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid rgb(255 255 255 / 18%); border-radius: 50%; color: #e8ded0; background: rgb(255 255 255 / 6%); transition: background .18s ease, color .18s ease; }
+.footer-social a:hover { background: rgb(255 255 255 / 16%); color: #fff; }
+
 .faq-section { display: grid; grid-template-columns: .7fr 1.3fr; gap: clamp(50px, 10vw, 145px); padding-top: 76px; padding-bottom: 115px; border-top: 1px solid #e2ded4; }
 .faq-intro h2 { margin-top: 17px; }
 .faq-intro > p { max-width: 290px; margin: 17px 0 20px; color: var(--body); font-size: 13px; line-height: 1.7; }
@@ -451,6 +499,9 @@ img { max-width: 100%; display: block; }
   .ribbon-places { order: 3; width: 100%; justify-content: center; }
   .coverage-layout { gap: 39px; }
   .registration-layout { gap: 36px; }
+  .chooser-cards { grid-template-columns: 1fr; }
+  .chooser-card { min-height: 0; }
+  .about-grid, .contact-grid { grid-template-columns: 1fr; }
   .form-grid--three { grid-template-columns: 1fr 1fr; }
   .form-grid--three > :first-child { grid-column: 1 / -1; }
 }

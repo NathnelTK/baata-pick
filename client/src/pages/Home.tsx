@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowRight, ArrowUpRight, Bike, Building2, Check, ChevronDown, MapPin, PackageCheck, Route, ShieldCheck, Store, UsersRound } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUpRight, Bike, Building2, Check, ChevronDown, Facebook, Instagram, MapPin, Music2, PackageCheck, Phone, Route, Send, ShieldCheck, Store, UsersRound } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 
 const regionNames = [
@@ -29,14 +29,14 @@ export default function Home() {
             <h1>Good things<br />should travel <em>everywhere.</em></h1>
             <p className="hero-lede">From busy city streets to the village road, we’re building a delivery network made for the way Ethiopia lives, works, and grows.</p>
             <div className="hero-actions">
-              <a className="button button--clay" href="/register/customer">Join the customer waitlist <ArrowUpRight size={17} /></a>
+              <a className="button button--clay" href="/register">Join the waitlist <ArrowUpRight size={17} /></a>
               <a className="text-link" href="#how-it-works">See how it could work <ArrowDown size={15} /></a>
             </div>
             <div className="hero-footnote"><span className="route-mini" aria-hidden="true"><i /><i /><i /></span><span>For every city, small town, and village.</span></div>
           </div>
           <div className="hero-art-wrap">
             <div className="hero-art-frame">
-              <img src="/manus-storage/async-images/ubkYyCzKnE6BnvbSnwWl1t/image-1.webp" alt="A courier on a red-earth road linking an Ethiopian highland village, farms, and a distant town" />
+              <img src="/ethiopia-map.svg" alt="Map of Ethiopia showing major highways and rural roads linking cities, towns, and villages" />
             </div>
             <div className="hero-note hero-note--top"><span className="hero-note-icon"><MapPin size={17} /></span><span><strong>Everywhere matters</strong><small>Not just the capital</small></span></div>
             <div className="hero-note hero-note--bottom"><span className="note-number">01</span><span><strong>Start with your area</strong><small>Tell us where delivery is needed</small></span><ArrowRight size={16} /></div>
@@ -91,7 +91,33 @@ export default function Home() {
           <div className="faq-list">{faqs.map((item, index) => <details className="faq-item" key={item.question} open={index === 0}><summary><span>{item.question}</span><ChevronDown size={18} /></summary><p>{item.answer}</p></details>)}</div>
         </section>
 
-        <section className="final-cta page-frame"><div className="final-cta-inner"><div className="final-cta-mark"><Route size={25} /></div><div className="final-cta-copy"><span className="final-cta-kicker">YOUR COMMUNITY. YOUR ROUTE.</span><h2>Where should BAATA go next?</h2><p>Join the waitlist and help us put the first routes where they matter.</p></div><a className="button button--light" href="/register/customer">Add your area <ArrowUpRight size={16} /></a><span className="cta-route-trail" aria-hidden="true">····················</span></div></section>
+        <section className="section about-section page-frame" id="about">
+          <div className="section-heading split-heading">
+            <div><Eyebrow>ABOUT BAATA PICK</Eyebrow><h2>Built in Ethiopia,<br /><em>for every road.</em></h2></div>
+            <p>BAATA PICK is an Ethiopian delivery network in the making—planned to connect the capital, regional cities, small towns, and village roads.</p>
+          </div>
+          <div className="about-grid">
+            <article className="about-card"><h3>Our mission</h3><p>We believe good things shouldn’t stop at the city line. BAATA exists to make everyday deliveries—meals, groceries, produce, medicine, and parcels—reachable from any community to the next.</p></article>
+            <article className="about-card"><h3>How we’re starting</h3><p>Before a single delivery is made, we’re listening. Registrations from customers, drivers, and businesses tell us where demand is real and which routes to build first.</p></article>
+            <article className="about-card"><h3>Where we’re headed</h3><p>A dependable network of local drivers and partner shops, designed for the way Ethiopia lives and works—launching area by area, starting with the places that ask first.</p></article>
+          </div>
+        </section>
+
+        <section className="section contact-section page-frame" id="contact">
+          <div className="section-heading split-heading">
+            <div><Eyebrow>CONTACT US</Eyebrow><h2>Talk to us<br /><em>anytime.</em></h2></div>
+            <p>Questions, partnership ideas, or press inquiries—reach us on any of these channels and we’ll get back to you.</p>
+          </div>
+          <div className="contact-grid">
+            <a className="contact-card" href="tel:+251977739741"><span className="contact-icon"><Phone size={20} /></span><span className="contact-copy"><strong>Phone</strong><span>0977739741</span></span><ArrowUpRight size={17} /></a>
+            <a className="contact-card" href="https://t.me/BaataPic" target="_blank" rel="noreferrer"><span className="contact-icon"><Send size={20} /></span><span className="contact-copy"><strong>Telegram</strong><span>t.me/BaataPic</span></span><ArrowUpRight size={17} /></a>
+            <a className="contact-card" href="https://www.tiktok.com/@baata.pick" target="_blank" rel="noreferrer"><span className="contact-icon"><Music2 size={20} /></span><span className="contact-copy"><strong>TikTok</strong><span>@baata.pick</span></span><ArrowUpRight size={17} /></a>
+            <a className="contact-card" href="https://instagram.com/baata_pick" target="_blank" rel="noreferrer"><span className="contact-icon"><Instagram size={20} /></span><span className="contact-copy"><strong>Instagram</strong><span>@baata_pick</span></span><ArrowUpRight size={17} /></a>
+            <a className="contact-card" href="https://www.facebook.com/profile.php?id=61595362771726" target="_blank" rel="noreferrer"><span className="contact-icon"><Facebook size={20} /></span><span className="contact-copy"><strong>Facebook</strong><span>BAATA PICK</span></span><ArrowUpRight size={17} /></a>
+          </div>
+        </section>
+
+        <section className="final-cta page-frame"><div className="final-cta-inner"><div className="final-cta-mark"><Route size={25} /></div><div className="final-cta-copy"><span className="final-cta-kicker">YOUR COMMUNITY. YOUR ROUTE.</span><h2>Where should BAATA go next?</h2><p>Join the waitlist and help us put the first routes where they matter.</p></div><a className="button button--light" href="/register">Join the waitlist <ArrowUpRight size={16} /></a><span className="cta-route-trail" aria-hidden="true">····················</span></div></section>
       </main>
       <SiteFooter />
     </div>
