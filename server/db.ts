@@ -1,9 +1,9 @@
 import { existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { and, count, desc, eq, like, or } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/libsql";
+import { migrate } from "drizzle-orm/libsql/migrator";
+import { createClient, type Client } from "@libsql/client";
 import {
   businessApplications,
   customers,
@@ -16,31 +16,33 @@ import {
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-/** Resolve the SQLite file path from DATABASE_URL (plain path or sqlite:// URL). */
-export function resolveDbPath() {
-  let target = (process.env.DATABASE_URL ?? "").trim().replace(/^sqlite:\/\//, "");
-  if (!target) {
-    // Serverless platforms (Vercel) only allow writes to /tmp; note the data is ephemeral there.
-    target = process.env.VERCEL ? "/tmp/baata-pick.db" : path.join("data", "baata-pick.db");
+/** Resolve the libSQL connection: a remote Turso URL or a local SQLite file. */
+export function resolveDbConfig(): { url: string; authToken?: string } {
+  const raw = (process.env.DATABASE_URL ?? "").trim();
+  const authToken = (process.env.DATABASE_AUTH_TOKEN ?? process.env.TURSO_AUTH_TOKEN ?? "").trim() || undefined;
+  if (raw) {
+    if (/^(libsql|https?):\/\//.test(raw)) return { url: raw, authToken };
+    // Plain path or file:// URL: local SQLite file.
+    let target = raw.replace(/^file:\/\//, "");
+    if (target !== ":memory:" && !path.isAbsolute(target)) target = path.join(process.cwd(), target);
+    return { url: `file:${target}` };
   }
-  if (target !== ":memory:" && !path.isAbsolute(target)) target = path.join(process.cwd(), target);
-  return target;
+  if (process.env.VERCEL) throw new Error("DATABASE_URL is required on Vercel (e.g. libsql://your-db.turso.io)");
+  return { url: `file:${path.join(process.cwd(), "data", "baata-pick.db")}` };
 }
 
-/** Open the SQLite database and apply pending drizzle migrations (idempotent). */
+/** Open the database and apply pending drizzle migrations (idempotent). */
 export async function getDb() {
   if (!_db) {
     try {
-      const dbPath = resolveDbPath();
-      if (dbPath !== ":memory:") mkdirSync(path.dirname(dbPath), { recursive: true });
-      const sqlite = new Database(dbPath);
-      sqlite.pragma("journal_mode = WAL");
-      sqlite.pragma("foreign_keys = ON");
-      const db = drizzle(sqlite);
+      const config = resolveDbConfig();
+      if (config.url.startsWith("file:")) mkdirSync(path.dirname(config.url.slice("file:".length)), { recursive: true });
+      const client: Client = createClient(config);
+      const db = drizzle(client);
       const migrationsFolder = path.join(process.cwd(), "drizzle");
       if (existsSync(migrationsFolder)) migrate(db, { migrationsFolder });
       _db = db;
-      console.log(`[Database] SQLite ready at ${dbPath}`);
+      console.log(`[Database] libSQL ready at ${config.url.replace(/^[^@]*@/, "***@")}`);
     } catch (error) {
       console.warn("[Database] Failed to open:", error instanceof Error ? error.message : "unknown error");
       _db = null;

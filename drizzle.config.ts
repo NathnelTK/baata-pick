@@ -1,13 +1,16 @@
 import { defineConfig } from "drizzle-kit";
 
-// SQLite database file. Accepts a plain path or a sqlite:// URL.
-const url = (process.env.DATABASE_URL ?? "data/baata-pick.db").replace(/^sqlite:\/\//, "");
+// Turso/libSQL or a local SQLite file. Generate works without a live database;
+// `pnpm db:migrate` applies pending migrations to the configured database.
+const url = (process.env.DATABASE_URL ?? "data/baata-pick.db").trim();
+const authToken = (process.env.DATABASE_AUTH_TOKEN ?? process.env.TURSO_AUTH_TOKEN ?? "").trim() || undefined;
 
 export default defineConfig({
   schema: "./drizzle/schema.ts",
   out: "./drizzle",
-  dialect: "sqlite",
+  dialect: "turso",
   dbCredentials: {
     url,
+    authToken,
   },
 });
