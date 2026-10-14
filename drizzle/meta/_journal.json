@@ -1,19 +1,12 @@
 {
   "version": "7",
-  "dialect": "mysql",
+  "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1788785580464,
-      "tag": "0000_initial_users",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1791802044185,
-      "tag": "0001_short_the_enforcers",
+      "version": "6",
+      "when": 1791964022579,
+      "tag": "0000_baata_sqlite_init",
       "breakpoints": true
     }
   ]

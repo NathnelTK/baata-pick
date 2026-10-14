@@ -103,8 +103,11 @@ temp/
 
 # Database
 *.db
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
+data/
 
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/

@@ -1,16 +1,25 @@
 # Owner setup and launch notes
 
+## Configure the JWT admin account
+
+The admin dashboard uses email + password sign-in with a JWT session cookie. No external identity provider is involved.
+
+Set these environment variables before starting the server:
+
+- `ADMIN_EMAIL` — the administrator email used to sign in at `/admin`.
+- `ADMIN_PASSWORD` — the administrator password (at least 8 characters).
+- `JWT_SECRET` — a long random string used to sign session tokens. If it is missing the server falls back to an ephemeral secret and all sessions are invalidated on every restart; always set it in production.
+
+On startup the server creates or refreshes the admin account from these values (scrypt-hashed password). Changing `ADMIN_PASSWORD` and restarting updates the password; clearing the variables disables admin sign-in for new sessions. Login attempts are rate-limited per IP.
+
 ## Claim the private dashboard
 
-1. Open the Mela website and visit `/admin`.
-2. Sign in with your own Manus account using the real OAuth flow.
-3. On the first-owner setup screen, enter the one-time code you created in the secure project secret card for `MELA_ADMIN_BOOTSTRAP_TOKEN`.
-4. The first successful claim permanently grants that signed-in account the admin role and records the claim in the database. The code cannot be used to grant any other account admin access. Keep it private and delete or rotate the secret only after the claim is complete; never commit or share it in source code.
-
-The secret should be scoped to **All environments**, as selected in the protected setup card, so it is available on Preview and the deployed website. The first admin claim is single-use across environments because development and publication share the project database.
+1. Set `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `JWT_SECRET` (see above). The SQLite schema is created automatically on first server start.
+2. Start the server and open `/admin`.
+3. Sign in with the configured email and password.
 
 ## Database and data handling
 
-This website uses the project's persistent managed MySQL-compatible database through Drizzle. The platform's container filesystem is temporary, so this is more durable than a SQLite file in the deployed container. The implementation does not claim to use SQLite or Entity Framework Core. The project's `drizzle/schema.ts` and additive migration files define the registration tables. Development and published versions share the managed database: do not submit test registrations to a real launch database, and do not run destructive migrations without a backup and approval.
+This website uses a persistent SQLite file database through Drizzle. The database file (default `data/baata-pick.db`, configurable via `DATABASE_URL`) holds the registration tables defined in `drizzle/schema.ts`, and pending migrations are applied automatically when the server starts. Back up the database file before running destructive schema changes.
 
 The public forms are interest registrations only. They do not accept orders or payment. Driver application statuses track review progress and do not certify legal eligibility. Before public launch, add a real contact channel and review the privacy notice for the operator's legal identity and retention policy.

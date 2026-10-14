@@ -18,7 +18,8 @@ function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] }
     openId: "sample-user",
     email: "sample@example.com",
     name: "Sample User",
-    loginMethod: "manus",
+    passwordHash: null,
+    loginMethod: "password",
     role: "user",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -30,11 +31,13 @@ function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] }
     req: {
       protocol: "https",
       headers: {},
+      socket: { remoteAddress: "127.0.0.1" },
     } as TrpcContext["req"],
     res: {
       clearCookie: (name: string, options: Record<string, unknown>) => {
         clearedCookies.push({ name, options });
       },
+      cookie: () => undefined,
     } as TrpcContext["res"],
   };
 
@@ -58,5 +61,17 @@ describe("auth.logout", () => {
       httpOnly: true,
       path: "/",
     });
+  });
+});
+
+describe("auth.login", () => {
+  it("rejects unknown credentials without setting a session cookie", async () => {
+    const { ctx, clearedCookies } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.auth.login({ email: "nobody@example.com", password: "not-the-password" });
+
+    expect(result.ok).toBe(false);
+    expect(clearedCookies).toHaveLength(0);
   });
 });

@@ -2,10 +2,10 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
 import { publicPlatformScript } from "./publicConfig";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
+import { ensureAdminSeed } from "./auth";
 import { serveStatic, setupVite } from "./vite";
 
 async function startServer() {
@@ -18,7 +18,6 @@ async function startServer() {
   app.get("/api/platform/config.js", (_req, res) => {
     res.set("Cache-Control", "no-store").type("application/javascript").send(publicPlatformScript());
   });
-  registerOAuthRoutes(app);
   // tRPC API
   app.use(
     "/api/trpc",
@@ -38,6 +37,11 @@ async function startServer() {
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("Invalid PORT");
   server.on("error", error => { console.error("Server failed:", error.message); process.exit(1); });
   server.listen(port, "0.0.0.0", () => console.log(`Server listening on port ${port}`));
+  try {
+    await ensureAdminSeed();
+  } catch (error) {
+    console.error("[Auth] Admin seeding failed:", error instanceof Error ? error.message : error);
+  }
 }
 
 startServer().catch(error => { console.error(error); process.exit(1); });

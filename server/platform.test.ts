@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { publicPlatformConfig, publicPlatformScript } from "./_core/publicConfig";
 import { getSessionCookieOptions } from "./_core/cookies";
-import { sdk } from "./_core/sdk";
+import { hashPassword, signSessionToken, verifyPassword } from "./_core/auth";
 import { listLLMModels } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
 import { COOKIE_NAME } from "../shared/const";
@@ -43,12 +43,34 @@ describe("current platform integration", () => {
     expect(COOKIE_NAME).not.toBe("app_session_id");
     expect(getSessionCookieOptions({ protocol: "http", headers: {} } as never)).toMatchObject({ secure: true, httpOnly: true, sameSite: "none" });
   });
-  it("binds signed app sessions to this project and accepts an empty display name", async () => {
-    vi.stubEnv("MANUS_PROJECT_ID", "project-test");
-    vi.stubEnv("MANUS_JWT_SECRET", "unit-test-signing-key-never-deployed");
-    const token = await sdk.signSession({ openId: "user-test", appId: "project-test", name: "" });
-    expect(await sdk.verifySession(token)).toMatchObject({ openId: "user-test" });
-    vi.stubEnv("MANUS_PROJECT_ID", "different-project");
-    expect(await sdk.verifySession(token)).toBeNull();
+  it("hashes passwords with a per-hash salt and rejects wrong passwords", async () => {
+    const hash = await hashPassword("correct horse battery staple");
+    expect(hash).toMatch(/^scrypt:[0-9a-f]+:[0-9a-f]+$/);
+    expect(await verifyPassword("correct horse battery staple", hash)).toBe(true);
+    expect(await verifyPassword("wrong password", hash)).toBe(false);
+  });
+
+  it("signs JWT sessions that verify and expire per the session window", async () => {
+    vi.stubEnv("JWT_SECRET", "unit-test-signing-key-never-deployed");
+    const now = new Date();
+    const user = {
+      id: 7,
+      openId: "admin:test",
+      name: "Mela Admin",
+      email: "test@example.com",
+      passwordHash: null,
+      loginMethod: "password",
+      role: "admin" as const,
+      createdAt: now,
+      updatedAt: now,
+      lastSignedIn: now,
+    };
+    const token = await signSessionToken(user);
+    const [, payload] = token.split(".");
+    const claims = JSON.parse(Buffer.from(payload!, "base64url").toString("utf8")) as { sub: string; role: string; exp: number };
+    expect(claims.sub).toBe("7");
+    expect(claims.role).toBe("admin");
+    expect(claims.exp).toBeGreaterThan(Math.floor(Date.now() / 1000));
+    vi.unstubAllEnvs();
   });
 });

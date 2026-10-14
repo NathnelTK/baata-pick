@@ -1,10 +1,9 @@
-import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
-import { COOKIE_NAME } from "@shared/const";
-import { ENV } from "./_core/env";
+import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
+import { signSessionToken, verifyPassword } from "./_core/auth";
 import { systemRouter } from "./_core/systemRouter";
-import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { allowRegistration } from "./registrationRateLimit";
 
@@ -44,17 +43,23 @@ function accepted() {
   // Identical for new, duplicate, and silently rate-limited submissions.
   return { ok: true as const, message: "Thank you. If this is a new registration, it has been added to the launch list." };
 }
-function matchesConfiguredToken(candidate: string, configured: string) {
-  if (configured.length < 32) return false;
-  const candidateBytes = Buffer.from(candidate, "utf8");
-  const configuredBytes = Buffer.from(configured, "utf8");
-  return candidateBytes.length === configuredBytes.length && timingSafeEqual(candidateBytes, configuredBytes);
-}
 
 export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
+    login: publicProcedure.input(z.object({ email: z.string().trim().min(3).max(320), password: z.string().min(1).max(200) })).mutation(async ({ ctx, input }) => {
+      if (!allowRegistration(ctx.req, "admin-login")) return { ok: false as const, message: "Too many attempts. Please try again later." };
+      const email = input.email.trim().toLowerCase();
+      const user = await db.getAdminByEmail(email);
+      const passwordMatches = user?.passwordHash ? await verifyPassword(input.password, user.passwordHash) : false;
+      if (!user || !passwordMatches) return { ok: false as const, message: "Invalid email or password." };
+      const token = await signSessionToken(user);
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      await db.touchLastSignedIn(user.id);
+      return { ok: true as const, message: "Signed in." };
+    }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -86,13 +91,6 @@ export const appRouter = router({
     }),
   }),
   admin: router({
-    claimOwner: protectedProcedure.input(z.object({ token: z.string().min(32).max(256) })).mutation(async ({ ctx, input }) => {
-      if (ctx.user.role === "admin") return { ok: true as const };
-      if (!allowRegistration(ctx.req, "owner-claim")) return { ok: false as const };
-      const configured = ENV.adminBootstrapToken;
-      if (!configured || !matchesConfiguredToken(input.token, configured)) return { ok: false as const };
-      return { ok: await db.claimFirstAdmin(ctx.user.id) } as const;
-    }),
     overview: adminProcedure.query(() => db.getAdminOverview()),
     customers: adminProcedure.input(areaFiltersSchema).query(({ input }) => db.listCustomers({ region: input.region || undefined, search: input.search || undefined })),
     drivers: adminProcedure.query(() => db.listDrivers()),

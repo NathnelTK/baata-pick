@@ -1,90 +1,82 @@
-import { boolean, index, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
-/** Core user table backing Manus OAuth and application roles. */
-export const users = mysqlTable("users", {
-  id: int("id").autoincrement().primaryKey(),
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
+/** Core user table. Admins sign in with email + password (JWT session cookie). */
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  openId: text("openId").notNull().unique(),
   name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  email: text("email"),
+  passwordHash: text("passwordHash"),
+  loginMethod: text("loginMethod"),
+  role: text("role", { enum: ["user", "admin"] }).notNull().default("user"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()).$onUpdate(() => new Date()),
+  lastSignedIn: integer("lastSignedIn", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-export const customers = mysqlTable("customers", {
-  id: int("id").autoincrement().primaryKey(),
-  fullName: varchar("fullName", { length: 120 }).notNull(),
-  phone: varchar("phone", { length: 32 }).notNull(),
-  email: varchar("email", { length: 320 }),
-  region: varchar("region", { length: 100 }).notNull(),
-  zone: varchar("zone", { length: 100 }).notNull(),
-  woreda: varchar("woreda", { length: 100 }).notNull(),
-  kebele: varchar("kebele", { length: 100 }).notNull(),
-  preferredDeliveryService: varchar("preferredDeliveryService", { length: 120 }).notNull(),
-  expectedFrequency: varchar("expectedFrequency", { length: 80 }).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, table => ({
-  phoneUnique: uniqueIndex("customers_phone_unique").on(table.phone),
-  regionIndex: index("customers_region_idx").on(table.region),
-  locationIndex: index("customers_location_idx").on(table.zone, table.woreda, table.kebele),
-}));
+export const customers = sqliteTable("customers", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  fullName: text("fullName").notNull(),
+  phone: text("phone").notNull(),
+  email: text("email"),
+  region: text("region").notNull(),
+  zone: text("zone").notNull(),
+  woreda: text("woreda").notNull(),
+  kebele: text("kebele").notNull(),
+  preferredDeliveryService: text("preferredDeliveryService").notNull(),
+  expectedFrequency: text("expectedFrequency").notNull(),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+}, table => [
+  uniqueIndex("customers_phone_unique").on(table.phone),
+  index("customers_region_idx").on(table.region),
+  index("customers_location_idx").on(table.zone, table.woreda, table.kebele),
+]);
 
 export type Customer = typeof customers.$inferSelect;
 export type InsertCustomer = typeof customers.$inferInsert;
 
-export const driverApplications = mysqlTable("driverApplications", {
-  id: int("id").autoincrement().primaryKey(),
-  fullName: varchar("fullName", { length: 120 }).notNull(),
-  phone: varchar("phone", { length: 32 }).notNull(),
-  region: varchar("region", { length: 100 }).notNull(),
-  operatingArea: varchar("operatingArea", { length: 180 }).notNull(),
-  vehicleType: varchar("vehicleType", { length: 80 }).notNull(),
-  vehicleOwnership: varchar("vehicleOwnership", { length: 80 }).notNull(),
+export const driverApplications = sqliteTable("driverApplications", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  fullName: text("fullName").notNull(),
+  phone: text("phone").notNull(),
+  region: text("region").notNull(),
+  operatingArea: text("operatingArea").notNull(),
+  vehicleType: text("vehicleType").notNull(),
+  vehicleOwnership: text("vehicleOwnership").notNull(),
   experience: text("experience").notNull(),
-  licenseDetails: varchar("licenseDetails", { length: 300 }).notNull(),
-  availability: varchar("availability", { length: 100 }).notNull(),
-  accuracyConfirmed: boolean("accuracyConfirmed").notNull().default(false),
-  privacyConsent: boolean("privacyConsent").notNull().default(false),
-  status: mysqlEnum("status", ["Pending", "Under Review", "Approved", "Rejected"]).notNull().default("Pending"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, table => ({
-  phoneUnique: uniqueIndex("driver_applications_phone_unique").on(table.phone),
-  statusIndex: index("driver_applications_status_idx").on(table.status),
-  regionIndex: index("driver_applications_region_idx").on(table.region),
-}));
+  licenseDetails: text("licenseDetails").notNull(),
+  availability: text("availability").notNull(),
+  accuracyConfirmed: integer("accuracyConfirmed", { mode: "boolean" }).notNull().default(false),
+  privacyConsent: integer("privacyConsent", { mode: "boolean" }).notNull().default(false),
+  status: text("status", { enum: ["Pending", "Under Review", "Approved", "Rejected"] }).notNull().default("Pending"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+}, table => [
+  uniqueIndex("driver_applications_phone_unique").on(table.phone),
+  index("driver_applications_status_idx").on(table.status),
+  index("driver_applications_region_idx").on(table.region),
+]);
 
 export type DriverApplication = typeof driverApplications.$inferSelect;
 export type InsertDriverApplication = typeof driverApplications.$inferInsert;
 
-export const businessApplications = mysqlTable("businessApplications", {
-  id: int("id").autoincrement().primaryKey(),
-  businessName: varchar("businessName", { length: 160 }).notNull(),
-  contactName: varchar("contactName", { length: 120 }).notNull(),
-  phone: varchar("phone", { length: 32 }).notNull(),
-  category: varchar("category", { length: 100 }).notNull(),
-  region: varchar("region", { length: 100 }).notNull(),
-  location: varchar("location", { length: 180 }).notNull(),
+export const businessApplications = sqliteTable("businessApplications", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  businessName: text("businessName").notNull(),
+  contactName: text("contactName").notNull(),
+  phone: text("phone").notNull(),
+  category: text("category").notNull(),
+  region: text("region").notNull(),
+  location: text("location").notNull(),
   productsServices: text("productsServices").notNull(),
   deliveryNeeds: text("deliveryNeeds").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, table => ({
-  phoneUnique: uniqueIndex("business_applications_phone_unique").on(table.phone),
-  regionIndex: index("business_applications_region_idx").on(table.region),
-}));
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+}, table => [
+  uniqueIndex("business_applications_phone_unique").on(table.phone),
+  index("business_applications_region_idx").on(table.region),
+]);
 
 export type BusinessApplication = typeof businessApplications.$inferSelect;
 export type InsertBusinessApplication = typeof businessApplications.$inferInsert;
-
-/** A fixed primary-key row makes the first owner claim atomic and single-use. */
-export const adminBootstrapClaims = mysqlTable("adminBootstrapClaims", {
-  id: int("id").primaryKey(),
-  userId: int("userId").notNull(),
-  claimedAt: timestamp("claimedAt").defaultNow().notNull(),
-}, table => ({
-  userUnique: uniqueIndex("admin_bootstrap_user_unique").on(table.userId),
-}));

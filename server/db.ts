@@ -1,63 +1,56 @@
+import { existsSync, mkdirSync } from "node:fs";
+import path from "node:path";
 import { and, count, desc, eq, like, or } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import Database from "better-sqlite3";
 import {
-  adminBootstrapClaims,
   businessApplications,
   customers,
   driverApplications,
   type InsertBusinessApplication,
   type InsertCustomer,
   type InsertDriverApplication,
-  type InsertUser,
   users,
 } from "../drizzle/schema";
-import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-/** Lazily connect so local tooling can run without a provisioned database. */
+/** Resolve the SQLite file path from DATABASE_URL (plain path or sqlite:// URL). */
+export function resolveDbPath() {
+  let target = (process.env.DATABASE_URL ?? "").trim().replace(/^sqlite:\/\//, "");
+  if (!target) target = path.join("data", "baata-pick.db");
+  if (target !== ":memory:" && !path.isAbsolute(target)) target = path.join(process.cwd(), target);
+  return target;
+}
+
+/** Open the SQLite database and apply pending drizzle migrations (idempotent). */
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  if (!_db) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      const dbPath = resolveDbPath();
+      if (dbPath !== ":memory:") mkdirSync(path.dirname(dbPath), { recursive: true });
+      const sqlite = new Database(dbPath);
+      sqlite.pragma("journal_mode = WAL");
+      sqlite.pragma("foreign_keys = ON");
+      const db = drizzle(sqlite);
+      const migrationsFolder = path.join(process.cwd(), "drizzle");
+      if (existsSync(migrationsFolder)) migrate(db, { migrationsFolder });
+      _db = db;
+      console.log(`[Database] SQLite ready at ${dbPath}`);
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error instanceof Error ? error.message : "unknown error");
+      console.warn("[Database] Failed to open:", error instanceof Error ? error.message : "unknown error");
       _db = null;
     }
   }
   return _db;
 }
 
-export async function upsertUser(user: InsertUser): Promise<void> {
-  if (!user.openId) throw new Error("User openId is required for upsert");
+export async function getUserById(id: number) {
   const db = await getDb();
-  if (!db) throw new Error("Database is not available");
-  const values: InsertUser = { openId: user.openId };
-  const updateSet: Record<string, unknown> = {};
-  const textFields = ["name", "email", "loginMethod"] as const;
-  type TextField = (typeof textFields)[number];
-  const assignNullable = (field: TextField) => {
-    const value = user[field];
-    if (value === undefined) return;
-    const normalized = value ?? null;
-    values[field] = normalized;
-    updateSet[field] = normalized;
-  };
-  textFields.forEach(assignNullable);
-  if (user.lastSignedIn !== undefined) {
-    values.lastSignedIn = user.lastSignedIn;
-    updateSet.lastSignedIn = user.lastSignedIn;
-  }
-  if (user.role !== undefined) {
-    values.role = user.role;
-    updateSet.role = user.role;
-  } else if (user.openId === ENV.ownerOpenId && ENV.ownerOpenId) {
-    values.role = "admin";
-    updateSet.role = "admin";
-  }
-  values.lastSignedIn ??= new Date();
-  if (Object.keys(updateSet).length === 0) updateSet.lastSignedIn = new Date();
-  await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result[0];
 }
 
 export async function getUserByOpenId(openId: string) {
@@ -65,6 +58,39 @@ export async function getUserByOpenId(openId: string) {
   if (!db) return undefined;
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result[0];
+}
+
+/** Admin lookup for JWT login; only admin-role users with a stored password hash qualify. */
+export async function getAdminByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(and(eq(users.email, email), eq(users.role, "admin"))).limit(1);
+  return result[0];
+}
+
+export async function createAdminUser(input: { openId: string; email: string; passwordHash: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.insert(users).values({
+    openId: input.openId,
+    name: "Mela Admin",
+    email: input.email,
+    passwordHash: input.passwordHash,
+    loginMethod: "password",
+    role: "admin",
+  });
+}
+
+export async function updateAdminUser(id: number, update: { role?: "admin"; passwordHash?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.update(users).set(update).where(eq(users.id, id));
+}
+
+export async function touchLastSignedIn(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users).set({ lastSignedIn: new Date() }).where(eq(users.id, id));
 }
 
 function isDuplicateRecord(error: unknown) {
@@ -100,33 +126,17 @@ export async function createBusinessApplication(input: InsertBusinessApplication
   catch (error) { if (isDuplicateRecord(error)) return false; throw error; }
 }
 
-/** Only the first user with the configured bootstrap token can claim owner-admin. */
-export async function claimFirstAdmin(userId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not available");
-  try {
-    return await db.transaction(async tx => {
-      const existing = await tx.select({ id: adminBootstrapClaims.id }).from(adminBootstrapClaims).limit(1);
-      if (existing.length) return false;
-      await tx.insert(adminBootstrapClaims).values({ id: 1, userId });
-      await tx.update(users).set({ role: "admin" }).where(eq(users.id, userId));
-      return true;
-    });
-  } catch (error) {
-    if (isDuplicateRecord(error)) return false;
-    throw error;
-  }
-}
-
 export async function getAdminOverview() {
   const db = await getDb();
   if (!db) throw new Error("Database is not available");
-  const [customerCount, driverCount, businessCount, pendingDrivers, demandByRegion] = await Promise.all([
+  const [customerCount, driverCount, businessCount, pendingDrivers, demandByRegion, businessesByCategory, customersByService] = await Promise.all([
     db.select({ total: count() }).from(customers),
     db.select({ total: count() }).from(driverApplications),
     db.select({ total: count() }).from(businessApplications),
     db.select({ total: count() }).from(driverApplications).where(eq(driverApplications.status, "Pending")),
     db.select({ region: customers.region, total: count() }).from(customers).groupBy(customers.region).orderBy(desc(count())).limit(20),
+    db.select({ category: businessApplications.category, total: count() }).from(businessApplications).groupBy(businessApplications.category).orderBy(desc(count())).limit(20),
+    db.select({ service: customers.preferredDeliveryService, total: count() }).from(customers).groupBy(customers.preferredDeliveryService).orderBy(desc(count())).limit(20),
   ]);
   return {
     totals: {
@@ -136,6 +146,8 @@ export async function getAdminOverview() {
       pendingDrivers: Number(pendingDrivers[0]?.total ?? 0),
     },
     demandByRegion: demandByRegion.map(row => ({ region: row.region, total: Number(row.total) })),
+    businessesByCategory: businessesByCategory.map(row => ({ category: row.category, total: Number(row.total) })),
+    customersByService: customersByService.map(row => ({ service: row.service, total: Number(row.total) })),
   };
 }
 

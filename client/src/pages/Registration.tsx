@@ -63,19 +63,19 @@ export default function Registration() {
   }
 
   return <div className="site-shell"><SiteHeader /><main className="registration-page page-frame">
-    <a className="back-link" href="/"><ArrowLeft size={16} /> Back to Mela</a>
+    <a className="back-link" href="/"><ArrowLeft size={16} /> Back to BAATA</a>
     <div className="registration-layout">
       <aside className="registration-aside">
         <span className="registration-step"><span>01</span> / 01 · {info.label.toUpperCase()}</span>
         <h1>{info.heading}</h1>
         <p>{info.intro}</p>
         <div className="aside-rule"><span /><span /><span /></div>
-        <div className="aside-promise"><ShieldCheck size={19} /><p>Your details help us plan. We’ll keep them private and use them only to understand demand or follow up about Mela’s launch.</p></div>
+        <div className="aside-promise"><ShieldCheck size={19} /><p>Your details help us plan. We’ll keep them private and use them only to understand demand or follow up about BAATA’s launch.</p></div>
         <div className="role-switcher"><span>Choose a different path</span><a className={kind === "customer" ? "role-link--active" : ""} href="/register/customer">Customer <ArrowRight size={14} /></a><a className={kind === "driver" ? "role-link--active" : ""} href="/register/driver">Driver <ArrowRight size={14} /></a><a className={kind === "business" ? "role-link--active" : ""} href="/register/business">Business <ArrowRight size={14} /></a></div>
       </aside>
       <section className="registration-card" aria-labelledby="registration-title">
         <div className="registration-card-head"><div><span className="form-overline">PREPARING TO LAUNCH</span><h2 id="registration-title">{submitted ? "You’re on our radar." : info.label}</h2></div><span className="form-dot" /></div>
-        {submitted ? <div className="success-state"><span className="success-icon"><Check size={24} /></span><h3>Thank you for being part of what comes next.</h3><p>If this is a new registration, it has been added to the launch list. We’ll share updates as Mela prepares to reach your area.</p><a className="button button--dark" href="/">Back to Mela <ArrowRight size={16} /></a><span className="success-privacy">No ordering is open yet. See our <a href="/privacy">privacy notice</a>.</span></div> : <form className="registration-form" onSubmit={handleSubmit}>
+        {submitted ? <div className="success-state"><span className="success-icon"><Check size={24} /></span><h3>Thank you for being part of what comes next.</h3><p>If this is a new registration, it has been added to the launch list. We’ll share updates as BAATA prepares to reach your area.</p><a className="button button--dark" href="/">Back to BAATA <ArrowRight size={16} /></a><span className="success-privacy">No ordering is open yet. See our <a href="/privacy">privacy notice</a>.</span></div> : <form className="registration-form" onSubmit={handleSubmit}>
           <input type="hidden" name="startedAt" value={startedAt} readOnly />
           <div className="honeypot" aria-hidden="true"><label htmlFor="website">Leave this field empty<input id="website" name="website" tabIndex={-1} autoComplete="off" /></label></div>
           {kind === "customer" && <>
@@ -109,6 +109,6 @@ export default function Registration() {
         </form>}
       </section>
     </div>
-    <div className="registration-bottom-note"><span className="bottom-note-line" />Mela is preparing to launch. This form is for interest only—orders aren’t open yet.<span className="bottom-note-line" /></div>
+    <div className="registration-bottom-note"><span className="bottom-note-line" />BAATA is preparing to launch. This form is for interest only—orders aren’t open yet.<span className="bottom-note-line" /></div>
   </main><SiteFooter /></div>;
 }

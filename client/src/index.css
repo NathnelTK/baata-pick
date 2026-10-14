@@ -86,6 +86,8 @@ img { max-width: 100%; display: block; }
 .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); width: max-content; }
 .brand-symbol { display: block; width: 43px; height: 43px; color: var(--clay); }
 .brand-symbol svg { width: 100%; height: 100%; }
+.brand-symbol--logo img { width: 100%; height: 100%; border-radius: 10px; object-fit: cover; object-position: 50% 44%; }
+.admin-brand-logo { width: 30px; height: 30px; border-radius: 8px; object-fit: cover; object-position: 50% 44%; }
 .brand-copy { display: flex; flex-direction: column; align-items: flex-start; line-height: 1; }
 .brand-word { font: 700 31px/.9 "Fraunces", Georgia, serif; letter-spacing: -1.5px; }
 .brand-word span { color: var(--clay); }
@@ -245,6 +247,7 @@ img { max-width: 100%; display: block; }
 .site-footer .brand { color: #fbf7ed; }
 .site-footer .brand-caption { color: #b0c1b5; }
 .site-footer .brand-symbol { color: #d16a48; }
+.site-footer .brand-symbol--logo img { border-radius: 10px; }
 .footer-brand-block > p { max-width: 275px; margin: 15px 0 0; color: #b7c7bc; font: 500 16px/1.45 "Fraunces", Georgia, serif; }
 .footer-links { display: flex; gap: clamp(50px, 8vw, 110px); }
 .footer-links > div { display: flex; min-width: 130px; flex-direction: column; gap: 8px; font-size: 11px; color: #c0cdc4; }
@@ -370,6 +373,10 @@ img { max-width: 100%; display: block; }
 .demand-row:first-child .demand-track i { background: var(--clay); }
 .demand-row strong { color: #506157; text-align: right; font-size: 9px; }
 .panel-footnote { margin: 17px 0 0; color: #929b92; font-size: 8px; }
+.categories-panel { margin-top: 15px; padding: 20px; }
+.category-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 6px; }
+.category-column h3 { margin: 0; color: #5c6a61; font-size: 10px; font-weight: 700; }
+.category-column .admin-empty { margin-top: 14px; }
 .launch-note-panel > p { margin: 17px 0 18px; color: #718076; font-size: 11px; line-height: 1.7; }
 .launch-note-divider { border-top: 1px solid #edf0e9; }
 .launch-note-status { display: flex; align-items: flex-start; gap: 10px; margin-top: 16px; color: var(--clay); }
@@ -558,6 +565,7 @@ img { max-width: 100%; display: block; }
   .admin-stat { min-height: 110px; padding: 15px 17px; }
   .admin-stat strong { margin-top: 12px; }
   .admin-main-grid { grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
+  .category-columns { grid-template-columns: 1fr; gap: 14px; }
   .demand-panel, .launch-note-panel { padding: 16px; }
   .records-panel { margin-top: 10px; }
   .records-heading { padding: 16px 15px 12px; }
