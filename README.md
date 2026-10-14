@@ -27,3 +27,9 @@ Pre-launch registration website: customers join a waitlist, drivers and business
 ## Admin
 
 Set `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `JWT_SECRET`, start the server, and sign in at `/admin`. See `OWNER_SETUP.md` for details.
+
+## Deploying to Vercel
+
+- `vercel.json` builds with `pnpm build`, serves `dist/public` as the static frontend, and routes `/api/*` to the serverless function in `api/index.ts` (shared Express app in `server/app.ts`).
+- Set the project environment variables in Vercel (**Settings > Environment Variables**): `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `JWT_SECRET`. The admin account is seeded on the first serverless request.
+- **Important:** on Vercel the SQLite file lives in the ephemeral `/tmp` filesystem, so registrations do not survive redeployments or between serverless instances. For real user registrations, connect a persistent database (e.g. Turso/libSQL, which is SQLite-compatible) or another hosted database before launch.

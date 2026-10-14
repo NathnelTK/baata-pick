@@ -19,7 +19,10 @@ let _db: ReturnType<typeof drizzle> | null = null;
 /** Resolve the SQLite file path from DATABASE_URL (plain path or sqlite:// URL). */
 export function resolveDbPath() {
   let target = (process.env.DATABASE_URL ?? "").trim().replace(/^sqlite:\/\//, "");
-  if (!target) target = path.join("data", "baata-pick.db");
+  if (!target) {
+    // Serverless platforms (Vercel) only allow writes to /tmp; note the data is ephemeral there.
+    target = process.env.VERCEL ? "/tmp/baata-pick.db" : path.join("data", "baata-pick.db");
+  }
   if (target !== ":memory:" && !path.isAbsolute(target)) target = path.join(process.cwd(), target);
   return target;
 }
