@@ -1,0 +1,1 @@
+{"routes":[{"path":"/","title":"Home"},{"path":"/register/:kind","title":"Registration"},{"path":"/admin","title":"Owner dashboard"},{"path":"/privacy","title":"Privacy notice"}]}
